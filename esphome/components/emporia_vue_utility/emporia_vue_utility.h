@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "driver/gpio.h"
 
 #include "esphome/components/sensor/sensor.h"
@@ -126,9 +128,9 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
   uint16_t pos = 0;
   uint16_t data_len;
 
-  time_t last_meter_reading = 0;
+  std::chrono::time_point<std::chrono::steady_clock> last_meter_reading = std::chrono::time_point<std::chrono::steady_clock>::min();
   bool last_reading_has_error;
-  time_t now;
+  std::chrono::time_point<std::chrono::steady_clock> now;
 
   // The most recent meter divisor, meter reading payload V2 byte 47
   uint8_t meter_div = 0;
@@ -311,7 +313,7 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
 
       // Extra debugging of non-zero bytes, only on first packet or if
       // debug_ is true
-      if ((debug_) || (last_meter_reading == 0)) {
+      if ((debug_) || (last_meter_reading == std::chrono::time_point<std::chrono::steady_clock>::min())) {
         ESP_LOGD(TAG, "Meter Divisor: %d", meter_div);
         ESP_LOGD(TAG, "Meter Cost Unit: %d", cost_unit);
         ESP_LOGD(TAG, "Meter Flags: %02x %02x", mr2->maybe_flags[0],
@@ -356,7 +358,7 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
 
       // Extra debugging of non-zero bytes, only on first packet or if
       // debug_ is true
-      if ((debug_) || (last_meter_reading == 0)) {
+      if ((debug_) || (last_meter_reading == std::chrono::time_point<std::chrono::steady_clock>::min())) {
         ESP_LOGD(TAG, "Meter Cost Unit: %d", cost_unit);
         ESP_LOGD(TAG, "Meter Divisor: %d", meter_div);
         ESP_LOGD(TAG, "Meter Energy Import Flags: %08x", mr7->import_wh);
