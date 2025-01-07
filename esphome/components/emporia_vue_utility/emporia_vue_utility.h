@@ -128,9 +128,14 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
   uint16_t pos = 0;
   uint16_t data_len;
 
-  std::chrono::time_point<std::chrono::steady_clock> last_meter_reading = std::chrono::time_point<std::chrono::steady_clock>::min();
+  using steady_time_point = std::chrono::time_point<std::chrono::steady_clock>;
+  static constexpr steady_time_point min_steady_time_point =
+    steady_time_point::min();
+  using steady_clock = std::chrono::steady_clock;
+
+  steady_time_point last_meter_reading = min_steady_time_point;
   bool last_reading_has_error;
-  std::chrono::time_point<std::chrono::steady_clock> now;
+  steady_time_point now;
 
   // The most recent meter divisor, meter reading payload V2 byte 47
   uint8_t meter_div = 0;
@@ -313,7 +318,7 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
 
       // Extra debugging of non-zero bytes, only on first packet or if
       // debug_ is true
-      if ((debug_) || (last_meter_reading == std::chrono::time_point<std::chrono::steady_clock>::min())) {
+      if ((debug_) || (last_meter_reading == min_steady_time_point)) {
         ESP_LOGD(TAG, "Meter Divisor: %d", meter_div);
         ESP_LOGD(TAG, "Meter Cost Unit: %d", cost_unit);
         ESP_LOGD(TAG, "Meter Flags: %02x %02x", mr2->maybe_flags[0],
@@ -358,7 +363,7 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
 
       // Extra debugging of non-zero bytes, only on first packet or if
       // debug_ is true
-      if ((debug_) || (last_meter_reading == std::chrono::time_point<std::chrono::steady_clock>::min())) {
+      if ((debug_) || (last_meter_reading == min_steady_time_point)) {
         ESP_LOGD(TAG, "Meter Cost Unit: %d", cost_unit);
         ESP_LOGD(TAG, "Meter Divisor: %d", meter_div);
         ESP_LOGD(TAG, "Meter Energy Import Flags: %08x", mr7->import_wh);
@@ -779,7 +784,7 @@ class EmporiaVueUtility : public PollingComponent, public uart::UARTDevice {
 
  private:
   bool debug_ = false;
-  std::chrono::milliseconds update_interval_;
+  steady_clock::duration update_interval_;
   sensor::Sensor *power_sensor_{nullptr};
   sensor::Sensor *power_export_sensor_{nullptr};
   sensor::Sensor *power_import_sensor_{nullptr};

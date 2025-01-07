@@ -24,20 +24,17 @@ void EmporiaVueUtility::update() {
 }
 
 void EmporiaVueUtility::loop() {
-  static const std::chrono::time_point<std::chrono::steady_clock> delayed_start_time =
-    std::chrono::steady_clock().now() + INITIAL_STARTUP_DELAY;
-  static std::chrono::time_point<std::chrono::steady_clock> next_expected_meter_request =
-    std::chrono::time_point<std::chrono::steady_clock>::min();
-  static std::chrono::time_point<std::chrono::steady_clock> next_meter_join =
-    delayed_start_time + METER_REJOIN_INTERVAL;
-  static std::chrono::time_point<std::chrono::steady_clock> next_version_request =
-    std::chrono::time_point<std::chrono::steady_clock>::min();
+  static const steady_time_point delayed_start_time =
+    steady_clock::now() + INITIAL_STARTUP_DELAY;
+  static steady_time_point next_expected_meter_request = min_steady_time_point;
+  static steady_time_point next_meter_join = delayed_start_time + METER_REJOIN_INTERVAL;
+  static steady_time_point next_version_request = min_steady_time_point;
   static uint8_t startup_step = 0;
   char msg_type = 0;
   size_t msg_len = 0;
 
   msg_len = read_msg();
-  now = std::chrono::steady_clock().now();
+  now = steady_clock::now();
 
   if (msg_len != 0) {
     msg_type = input_buffer.data[2];
